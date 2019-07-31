@@ -195,6 +195,32 @@ class User {
     return List();
   }
 
+  /// Get [User] from id
+  /// (system doesn't check if [id] has a [User] associated)
+  ///
+  /// return [User] requested;
+  static Future<User> fromID(int id) async {
+    User user;
+    await exist(id: id).then((result) async {
+      if (!result) {
+        new Exception("User not found");
+      }
+    });
+    await usersDatabase().then((conn) async {
+      await conn.query("SELECT * FROM users WHERE id=" + id.toString()).then((result) async {
+        for (var userData in result) {
+          User tempUser = new User(id, userData[3]);
+          while (tempUser._dataElaborated<UserType.values.length-3) {
+            await new Future.delayed(const Duration(milliseconds: 250), () => "1").then((e) {
+              user=tempUser;
+            });
+          }
+        }
+      });
+    });
+    return user;
+  }
+
   /// Get [User] from email
   /// (system doesn't check if [email] has a [User] associated)
   ///

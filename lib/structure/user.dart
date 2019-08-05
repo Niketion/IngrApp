@@ -4,6 +4,7 @@ import 'package:crypt/crypt.dart';
 import 'package:ingrif_app/structure/structure.dart';
 import 'package:ingrif_app/structure/lang.dart';
 import 'package:ingrif_app/structure/chat/chat.dart';
+import '../main.dart';
 import 'characteristic.dart';
 
 class User {
@@ -101,12 +102,12 @@ class User {
       return user;
     }
 
-    await usersDatabase().then((conn) async {
+
       int id;
       await _getUsersRegistered().then((number) {
         id = number+1;
       });
-      await conn.query(
+      await getDatabase().query(
           'insert into `users` (id, vip, verified, email, bio, username, password, lang) values (?, ?, ?, ?, ?, ?, ?, ?)',
           [
             id,
@@ -128,7 +129,7 @@ class User {
           }
         });
       });
-    });
+
     return user;
   }
 
@@ -151,27 +152,24 @@ class User {
     if (isEmail) {
       await exist(email: choose).then((exist) async {
         if (exist) {
-          await usersDatabase().then((conn) async {
-            await conn.query("SELECT " + string.toLowerCase() + " FROM users WHERE "
+
+            await getDatabase().query("SELECT " + string.toLowerCase() + " FROM users WHERE "
                 +  "email='" + choose.toString() + "'").then((result) async {
               for (var user in result) {
                 theReturn = user[0];
               }
             });
-          });
         }
       });
     } else {
       await exist(id: choose).then((exist) async {
         if (exist) {
-          await usersDatabase().then((conn) async {
-            await conn.query("SELECT " + string.toLowerCase() + " FROM users WHERE "
+            await getDatabase().query("SELECT " + string.toLowerCase() + " FROM users WHERE "
                 +  "id=" + choose.toString()).then((result) async {
               for (var user in result) {
                 theReturn = user[0];
               }
             });
-          });
         }
       });
     }
@@ -180,13 +178,12 @@ class User {
 
   static Future<int> _getUsersRegistered() async {
     int number;
-    await usersDatabase().then((conn) async {
-      await conn.query("SELECT COUNT(*) FROM users").then((result) async {
+
+      await getDatabase().query("SELECT COUNT(*) FROM users").then((result) async {
         for (var numbers in result) {
           number = numbers[0];
         }
       });
-    });
     return number;
   }
 
@@ -206,8 +203,8 @@ class User {
         new Exception("User not found");
       }
     });
-    await usersDatabase().then((conn) async {
-      await conn.query("SELECT * FROM users WHERE id=" + id.toString()).then((result) async {
+
+      await getDatabase().query("SELECT * FROM users WHERE id=" + id.toString()).then((result) async {
         for (var userData in result) {
           User tempUser = new User(id, userData[3]);
           while (tempUser._dataElaborated<UserType.values.length-3) {
@@ -217,7 +214,7 @@ class User {
           }
         }
       });
-    });
+
     return user;
   }
 
@@ -232,8 +229,8 @@ class User {
         new Exception("User not found");
       }
     });
-    await usersDatabase().then((conn) async {
-      await conn.query("SELECT * FROM users WHERE email='" + email + "'").then((result) async {
+
+      await getDatabase().query("SELECT * FROM users WHERE email='" + email + "'").then((result) async {
         for (var userData in result) {
           User tempUser = new User(userData[0], email);
           while (tempUser._dataElaborated<UserType.values.length-3) {
@@ -243,7 +240,7 @@ class User {
           }
         }
       });
-    });
+
     return user;
   }
 
@@ -253,15 +250,15 @@ class User {
   /// return [bool] true if exist
   static Future<bool> exist({String email, int id}) async {
     bool exist=false;
-    await usersDatabase().then((conn) async {
-      await conn.query(
-          "SELECT * FROM users WHERE " + (email == null ? "id" : "email") +
-              "="+(email == null ? "" : "'") + (email == null ? id.toString() : email) + (email == null ? "" : "'")).then((result) {
-        if (result.length > 0) {
-          exist=true;
-        }
-      });
-    });
+
+    await getDatabase().query(
+        "SELECT * FROM users WHERE " + (email == null ? "id" : "email") +
+            "="+(email == null ? "" : "'") + (email == null ? id.toString() : email) + (email == null ? "" : "'")).then((result) {
+              if (result.length > 0) {
+                exist=true;
+              }
+            });
+
     return exist;
   }
 

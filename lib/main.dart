@@ -1,4 +1,5 @@
 import 'package:ingrif_app/structure/chat/chat.dart';
+import 'package:ingrif_app/structure/chat/message.dart';
 import 'package:ingrif_app/structure/structure.dart';
 import 'package:ingrif_app/structure/user.dart';
 import 'package:ingrif_app/structure/lang.dart';
@@ -8,7 +9,7 @@ import 'database/mysql.dart';
 
 MySqlConnection database;
 
-void main() async  {
+void main() async {
   await new MySQL().connect().then((conn) {
     database = conn;
   });
@@ -17,7 +18,9 @@ void main() async  {
     list.add(user);
     User.newUser("rgreg", "Drvs", "a", LangManager(Lang.ENGLISH)).then((user1) {
       list.add(user1);
-      Chat.createChat(list, Section.INCONTRI);
+      Chat.createChat(list, Section.INCONTRI).then((chat) {
+        chat.createMessage(MessageType.TEXT, user, "lol");
+      });
     });
   });
 }
